@@ -389,26 +389,40 @@ export default function ProfilePage() {
       const sessionObj = JSON.parse(sessionStr);
       setUser(sessionObj);
       
+      let loadedBookings: any[] = [];
+      const userKey = sessionObj.email || sessionObj.phone;
+      
       try {
         const res = await fetch('/api/bookings');
         if (res.ok) {
           const data = await res.json();
           // Filter bookings for this user
-          const userKey = sessionObj.email || sessionObj.phone;
           const userBookingsRaw = data.bookings.filter((b: any) => b.userEmail === userKey);
-          
           // Map to fullDetails format if it exists, otherwise use raw booking
-          const loadedBookings = userBookingsRaw.map((b: any) => b.fullDetails ? b.fullDetails : b);
-          
-          setAllBookings(loadedBookings);
-          if (loadedBookings.length > 0) {
-            setBooking(loadedBookings[0]);
-          } else {
-            setBooking(null);
-          }
+          loadedBookings = userBookingsRaw.map((b: any) => b.fullDetails ? b.fullDetails : b);
         }
       } catch (err) {
         console.error("Failed to load bookings from API", err);
+      }
+      
+      // Merge with localStorage
+      const localKey = `activeBookings_${userKey}`;
+      const localBookingsStr = localStorage.getItem(localKey);
+      if (localBookingsStr) {
+        const localBookings = JSON.parse(localBookingsStr);
+        const existingIds = new Set(loadedBookings.map(b => b.id));
+        localBookings.forEach((lb: any) => {
+          if (!existingIds.has(lb.id)) {
+            loadedBookings.unshift(lb); // Add local bookings to the top
+          }
+        });
+      }
+      
+      setAllBookings(loadedBookings);
+      if (loadedBookings.length > 0) {
+        setBooking(loadedBookings[0]);
+      } else {
+        setBooking(null);
       }
       
       if (localStorage.getItem("showBookingNotification") === "true") {
