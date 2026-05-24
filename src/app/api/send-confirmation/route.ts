@@ -18,6 +18,7 @@ export async function POST(request: Request) {
     const mailOptions = {
       from: process.env.EMAIL_USER || 'kiranlaptop77@gmail.com',
       to: data.contactEmail,
+      bcc: process.env.EMAIL_USER || 'kiranlaptop77@gmail.com',
       subject: `Booking Confirmation: ${data.occasion} Event - ${data.id}`,
       html: `
         <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
