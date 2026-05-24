@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { 
   Users, Calendar, LayoutDashboard, Settings, LogOut, 
   Search, Edit3, Trash2, User as UserIcon, MapPin, 
-  Clock, CheckCircle2, AlertCircle, X, ChevronRight, Activity
+  Clock, CheckCircle2, AlertCircle, X, ChevronRight, Activity, Mail, Phone
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
