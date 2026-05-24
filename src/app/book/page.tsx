@@ -270,6 +270,12 @@ export default function BookEventPage() {
       console.error('Failed to save booking to db', error);
     }
     
+    const storageKey = `activeBookings_${userEmail}`;
+    const existingBookingsStr = localStorage.getItem(storageKey);
+    const existingBookings = existingBookingsStr ? JSON.parse(existingBookingsStr) : [];
+    const updatedBookings = [bookingData, ...existingBookings];
+    localStorage.setItem(storageKey, JSON.stringify(updatedBookings));
+    
     localStorage.setItem("activeBooking", JSON.stringify(bookingData));
     
     // Redirect to profile page with newBooking flag to show success toast
