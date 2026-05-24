@@ -377,7 +377,7 @@ export default function ProfilePage() {
 
 
   // Load Session and Booking
-  const loadSessionAndBooking = () => {
+  const loadSessionAndBooking = async () => {
     if (typeof window !== "undefined") {
       const sessionStr = localStorage.getItem("euphoria_session");
       if (!sessionStr) {
@@ -388,22 +388,27 @@ export default function ProfilePage() {
       
       const sessionObj = JSON.parse(sessionStr);
       setUser(sessionObj);
-      const userKey = sessionObj.email || sessionObj.phone;
-      const storageKey = `activeBookings_${userKey}`;
       
-      const activeBookingsStr = localStorage.getItem(storageKey);
-      let loadedBookings = [];
-      if (activeBookingsStr) {
-        loadedBookings = JSON.parse(activeBookingsStr);
-        setAllBookings(loadedBookings);
-      } else {
-        setAllBookings([]);
-      }
-      
-      if (loadedBookings.length > 0) {
-        setBooking(loadedBookings[0]);
-      } else {
-        setBooking(null);
+      try {
+        const res = await fetch('/api/bookings');
+        if (res.ok) {
+          const data = await res.json();
+          // Filter bookings for this user
+          const userKey = sessionObj.email || sessionObj.phone;
+          const userBookingsRaw = data.bookings.filter((b: any) => b.userEmail === userKey);
+          
+          // Map to fullDetails format if it exists, otherwise use raw booking
+          const loadedBookings = userBookingsRaw.map((b: any) => b.fullDetails ? b.fullDetails : b);
+          
+          setAllBookings(loadedBookings);
+          if (loadedBookings.length > 0) {
+            setBooking(loadedBookings[0]);
+          } else {
+            setBooking(null);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load bookings from API", err);
       }
       
       if (localStorage.getItem("showBookingNotification") === "true") {

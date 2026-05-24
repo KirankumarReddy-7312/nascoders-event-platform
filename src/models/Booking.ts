@@ -10,19 +10,21 @@ export interface IBooking extends Document {
   contactEmail: string;
   contactPhone: string;
   specialRequests?: string;
+  fullDetails?: any;
   createdAt: Date;
 }
 
 const BookingSchema: Schema = new Schema({
-  userEmail: { type: String, required: true }, // To link to user
+  userEmail: { type: String, required: true },
   occasion: { type: String, required: true },
   date: { type: String, required: true },
   time: { type: String, required: true },
   location: { type: String, required: true },
-  status: { type: String, default: 'Pending' },
+  status: { type: String, default: 'Active' },
   contactEmail: { type: String, required: true },
   contactPhone: { type: String, required: true },
   specialRequests: { type: String, required: false },
+  fullDetails: { type: Schema.Types.Mixed },
   createdAt: { type: Date, default: Date.now },
 });
 

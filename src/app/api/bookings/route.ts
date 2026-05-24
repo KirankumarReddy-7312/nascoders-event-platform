@@ -29,7 +29,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { userEmail, occasion, date, time, location, contactEmail, contactPhone, specialRequests } = body;
+    const { userEmail, occasion, date, time, location, contactEmail, contactPhone, specialRequests, fullDetails } = body;
 
     if (!occasion || !date || !time || !location || !contactEmail || !contactPhone) {
       return NextResponse.json({ message: 'Missing required booking fields' }, { status: 400 });
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     await connectToDatabase();
 
     const newBooking = await Booking.create({
-      userEmail: userEmail || 'guest', // Allow guest bookings temporarily if needed
+      userEmail: userEmail || 'guest', 
       occasion,
       date,
       time,
@@ -46,7 +46,8 @@ export async function POST(req: Request) {
       contactEmail,
       contactPhone,
       specialRequests,
-      status: 'Pending'
+      fullDetails,
+      status: 'Active'
     });
 
     return NextResponse.json({ message: 'Booking created successfully', booking: newBooking }, { status: 201 });

@@ -16,7 +16,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string; role?: string } | null>(null);
   
   const { language, setLanguage, t } = useLanguage();
 
@@ -139,13 +139,13 @@ export default function Navbar() {
           {user ? (
             <div className="flex items-center gap-5">
               <Link 
-                href="/profile" 
+                href={user.role === 'admin' ? '/admin' : '/profile'} 
                 className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors flex items-center gap-1.5"
               >
                 <div className="w-6 h-6 rounded-full bg-stone-100 flex items-center justify-center text-[10px] font-bold text-stone-600">
                   {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                 </div>
-                My Profile
+                {user.role === 'admin' ? 'Admin Portal' : 'My Profile'}
               </Link>
               <button 
                 onClick={handleLogout}
@@ -202,11 +202,11 @@ export default function Navbar() {
             {user ? (
               <>
                 <Link
-                  href="/profile"
+                  href={user.role === 'admin' ? '/admin' : '/profile'}
                   onClick={() => setMobileMenuOpen(false)}
                   className="border-b border-stone-200/50 pb-4 text-stone-700 font-medium"
                 >
-                  My Profile Dashboard
+                  {user.role === 'admin' ? 'Admin Portal' : 'My Profile Dashboard'}
                 </Link>
                 <div className="border-b border-stone-200/50 pb-4 text-stone-500 text-sm font-light">
                   Logged in as <span className="font-medium text-stone-800">{user.name}</span>

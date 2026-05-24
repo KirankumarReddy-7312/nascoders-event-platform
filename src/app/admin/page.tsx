@@ -39,44 +39,52 @@ export default function AdminDashboard() {
       router.push("/login");
     }
 
-    // Initialize real data from localStorage
+    // Initialize real data from API
     if (typeof window !== "undefined") {
-      const allUsers = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith("activeBookings_")) {
-          const emailOrPhone = key.replace("activeBookings_", "");
-          try {
-            const bookingsStr = localStorage.getItem(key);
-            const bookings = bookingsStr ? JSON.parse(bookingsStr) : [];
+      const loadBookings = async () => {
+        try {
+          const res = await fetch('/api/bookings');
+          if (res.ok) {
+            const data = await res.json();
+            const bookings = data.bookings;
             
-            // Generate a user object based on the bookings
-            // Normally this comes from a database, but we will reconstruct it here
-            if (bookings.length > 0) {
-              const latestBooking = bookings[bookings.length - 1];
-              allUsers.push({
-                id: emailOrPhone,
-                name: latestBooking.yourName || emailOrPhone,
-                email: latestBooking.contactEmail || emailOrPhone,
-                phone: latestBooking.contactPhone || "Not Provided",
-                vipStatus: "Standard",
-                joined: new Date(latestBooking.bookingTimestamp || Date.now()).toLocaleDateString("en-US"),
-                bookings: bookings.map((b: any) => ({
-                  id: b.id,
-                  occasion: b.occasion,
-                  status: new Date(`${b.targetDate}T${b.targetTime || "00:00"}`).getTime() > Date.now() ? "Active" : "Completed",
-                  targetDate: b.targetDate,
-                  venue: b.city + " / " + b.venueAddress,
-                  total: b.priceDetails?.total || 0
-                }))
+            // Group by userEmail
+            const usersMap: any = {};
+            
+            bookings.forEach((b: any) => {
+              const fullDetails = b.fullDetails || b;
+              const email = b.userEmail;
+              
+              if (!usersMap[email]) {
+                usersMap[email] = {
+                  id: email,
+                  name: fullDetails.yourName || email,
+                  email: fullDetails.contactEmail || email,
+                  phone: fullDetails.contactPhone || "Not Provided",
+                  vipStatus: "Standard",
+                  joined: new Date(fullDetails.bookingTimestamp || b.createdAt).toLocaleDateString("en-US"),
+                  bookings: []
+                };
+              }
+              
+              usersMap[email].bookings.push({
+                id: fullDetails.id || b._id,
+                occasion: fullDetails.occasion || b.occasion,
+                status: fullDetails.targetDate ? (new Date(`${fullDetails.targetDate}T${fullDetails.targetTime || "00:00"}`).getTime() > Date.now() ? "Active" : "Completed") : b.status,
+                targetDate: fullDetails.targetDate || b.date,
+                venue: (fullDetails.city ? fullDetails.city + " / " : "") + (fullDetails.venueAddress || b.location),
+                total: fullDetails.priceDetails?.total || 0
               });
-            }
-          } catch (e) {
-            console.error("Error parsing bookings for key", key);
+            });
+            
+            setUsers(Object.values(usersMap));
           }
+        } catch (e) {
+          console.error("Error loading admin bookings", e);
         }
-      }
-      setUsers(allUsers);
+      };
+      
+      loadBookings();
     }
   }, [router]);
 

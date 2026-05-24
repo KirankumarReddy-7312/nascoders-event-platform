@@ -250,18 +250,24 @@ export default function BookEventPage() {
       try { userEmail = JSON.parse(sessionStr).email || JSON.parse(sessionStr).phone; } catch(e) {}
     }
     
-    if (userEmail === "guest") {
-      const guestBookingsStr = localStorage.getItem("activeBookings");
-      const guestBookings = guestBookingsStr ? JSON.parse(guestBookingsStr) : [];
-      guestBookings.unshift(bookingData);
-      localStorage.setItem("activeBookings", JSON.stringify(guestBookings));
-    } else {
-      const storageKey = `activeBookings_${userEmail}`;
-      const existingBookingsStr = localStorage.getItem(storageKey);
-      const existingBookings = existingBookingsStr ? JSON.parse(existingBookingsStr) : [];
-      
-      const updatedBookings = [bookingData, ...existingBookings];
-      localStorage.setItem(storageKey, JSON.stringify(updatedBookings));
+    try {
+      await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userEmail,
+          occasion: selectedOccasion,
+          date: targetDate,
+          time: targetTime,
+          location: selectedCity + ' - ' + venueAddress,
+          contactEmail,
+          contactPhone,
+          specialRequests: secretNote,
+          fullDetails: bookingData
+        })
+      });
+    } catch (error) {
+      console.error('Failed to save booking to db', error);
     }
     
     localStorage.setItem("activeBooking", JSON.stringify(bookingData));

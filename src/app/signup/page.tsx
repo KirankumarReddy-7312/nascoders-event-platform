@@ -23,7 +23,7 @@ export default function SignupPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -47,38 +47,42 @@ export default function SignupPage() {
 
     setIsLoading(true);
 
-    // Simulate API registration call
-    setTimeout(() => {
-      setIsLoading(false);
-      // Store mock user details in localStorage
-      // Store mock user details in localStorage
-      const newUser = {
-        name: `${firstName} ${lastName}`,
-        email: email,
-        password: password
-      };
-      
-      const usersStr = localStorage.getItem("euphoria_users");
-      const users = usersStr ? JSON.parse(usersStr) : [];
-      
-      if (users.find((u: any) => u.email === email)) {
-        setError("Account already exists with this email.");
+    // Call real API
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          name: `${firstName} ${lastName}`, 
+          email, 
+          password 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || 'Something went wrong');
+        setIsLoading(false);
         return;
       }
-      
-      users.push(newUser);
-      localStorage.setItem("euphoria_users", JSON.stringify(users));
 
+      // Login successful, set session
       localStorage.setItem(
         "euphoria_session",
         JSON.stringify({
-          name: newUser.name,
-          email: newUser.email,
+          name: `${firstName} ${lastName}`,
+          email: email,
         })
       );
-      // Redirect to profile and refresh navbar state
+
+      // Redirect to profile
       window.location.href = "/profile";
-    }, 1500);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to connect to server.');
+      setIsLoading(false);
+    }
   };
 
 const handleSocialLogin = (provider: string) => {

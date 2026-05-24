@@ -21,7 +21,7 @@ export default function LoginPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -61,24 +61,18 @@ export default function LoginPage() {
 
     setIsLoading(true);
 
-    // Simulate authentication call
-    setTimeout(() => {
-      setIsLoading(false);
+    // Call real API
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-      // Check for user details in localStorage
-      const usersStr = localStorage.getItem("euphoria_users");
-      const users = usersStr ? JSON.parse(usersStr) : [];
-      
-      const existingUser = users.find((u: any) => u.email === email);
-      
-      if (!existingUser) {
-        setError("Account not found. Please sign up.");
-        setIsLoading(false);
-        return;
-      }
+      const data = await response.json();
 
-      if (existingUser.password !== password) {
-        setError("Invalid password. Please try again.");
+      if (!response.ok) {
+        setError(data.message || 'Invalid credentials');
         setIsLoading(false);
         return;
       }
@@ -87,8 +81,8 @@ export default function LoginPage() {
       localStorage.setItem(
         "euphoria_session",
         JSON.stringify({
-          name: existingUser.name,
-          email: existingUser.email,
+          name: data.user.name,
+          email: data.user.email,
         })
       );
       
@@ -112,7 +106,11 @@ export default function LoginPage() {
 
       // Redirect to profile and refresh navbar state
       window.location.href = "/profile";
-    }, 1500);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to connect to server.');
+      setIsLoading(false);
+    }
   };
 
 const handleSocialLogin = (provider: string) => {
