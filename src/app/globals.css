@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FFFAF0; /* Warm organic white */
+  --foreground: #292524; /* Stone 800 */
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(230, 215, 200, 0.6);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+.glass-nav {
+  background: rgba(255, 250, 240, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(230, 215, 200, 0.4);
+}
+
+.heading-gradient {
+  background: linear-gradient(135deg, #78350F 0%, #D97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
