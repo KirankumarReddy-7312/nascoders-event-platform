@@ -109,33 +109,57 @@ export default function AdminDashboard() {
   };
 
   // --- BOOKING ACTIONS ---
-  const handleRemoveBooking = (bookingId: string) => {
+  const handleRemoveBooking = async (bookingId: string) => {
     if (confirm("Are you sure you want to cancel and remove this booking?")) {
-      const updatedUsers = users.map(u => ({
-        ...u,
-        bookings: u.bookings.filter((b: any) => b.id !== bookingId)
-      }));
-      setUsers(updatedUsers);
-      
-      // Update selected user view if active
-      if (selectedUser) {
-        setSelectedUser(updatedUsers.find(u => u.id === selectedUser.id));
+      try {
+        await fetch(`/api/bookings/${bookingId}`, { method: 'DELETE' });
+        const updatedUsers = users.map(u => ({
+          ...u,
+          bookings: u.bookings.filter((b: any) => b.id !== bookingId)
+        }));
+        setUsers(updatedUsers);
+        
+        // Update selected user view if active
+        if (selectedUser) {
+          setSelectedUser(updatedUsers.find(u => u.id === selectedUser.id));
+        }
+      } catch (err) {
+        console.error("Failed to delete booking", err);
       }
     }
   };
 
-  const handleSaveBooking = (e: React.FormEvent) => {
+  const handleSaveBooking = async (e: React.FormEvent) => {
     e.preventDefault();
-    const updatedUsers = users.map(u => ({
-      ...u,
-      bookings: u.bookings.map((b: any) => b.id === editBookingData.id ? editBookingData : b)
-    }));
-    setUsers(updatedUsers);
-    
-    if (selectedUser) {
-      setSelectedUser(updatedUsers.find(u => u.id === selectedUser.id));
+    try {
+      await fetch(`/api/bookings/${editBookingData.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          occasion: editBookingData.occasion,
+          date: editBookingData.targetDate,
+          location: editBookingData.venue,
+          status: editBookingData.status,
+          'fullDetails.occasion': editBookingData.occasion,
+          'fullDetails.targetDate': editBookingData.targetDate,
+          'fullDetails.venueAddress': editBookingData.venue,
+          'fullDetails.city': editBookingData.venue?.split(' / ')[0]
+        })
+      });
+
+      const updatedUsers = users.map(u => ({
+        ...u,
+        bookings: u.bookings.map((b: any) => b.id === editBookingData.id ? editBookingData : b)
+      }));
+      setUsers(updatedUsers);
+      
+      if (selectedUser) {
+        setSelectedUser(updatedUsers.find(u => u.id === selectedUser.id));
+      }
+      setShowEditBookingModal(false);
+    } catch (err) {
+      console.error("Failed to update booking", err);
     }
-    setShowEditBookingModal(false);
   };
 
 

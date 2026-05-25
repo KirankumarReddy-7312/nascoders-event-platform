@@ -11,7 +11,7 @@ export async function POST(request: Request) {
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER || 'kiranlaptop77@gmail.com',
-        pass: process.env.EMAIL_PASS || '', 
+        pass: process.env.EMAIL_PASS || 'izqxcgxvgcovoorq', 
       },
     });
 
@@ -59,13 +59,7 @@ export async function POST(request: Request) {
       `,
     };
 
-    // If no password is provided in ENV, log it and return success for testing purposes
-    // so it doesn't crash the frontend if they haven't set up the password yet.
-    if (!process.env.EMAIL_PASS) {
-      console.warn("EMAIL_PASS not set. Skipping actual email send. Mock success.");
-      return NextResponse.json({ success: true, message: 'Mock email sent (Missing credentials)' });
-    }
-
+    // Attempt to send the email
     await transporter.sendMail(mailOptions);
     return NextResponse.json({ success: true, message: 'Email sent successfully' });
 
